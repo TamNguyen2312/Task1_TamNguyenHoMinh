@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using Task1.DAL;
+
 namespace Task1.WebAPI
 {
     public class Program
@@ -13,6 +16,12 @@ namespace Task1.WebAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+
+            //set up DB
+            builder.Services.AddDbContext<MasterContext>(options => {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("pubs"));
+            });
 
             var app = builder.Build();
 
