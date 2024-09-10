@@ -1,5 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
+using Task1.BLL.Helper.Mapper;
+using Task1.BLL.Services.Implements;
+using Task1.BLL.Services.Interfaces;
 using Task1.DAL;
 using Task1.DAL.Repositories;
 
@@ -29,12 +32,18 @@ namespace Task1.WebAPI
             });
 
             //set up DB
-            builder.Services.AddDbContext<MasterContext>(options => {
+            builder.Services.AddDbContext<PubsContext>(options => {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("pubs"));
             });
 
+            //AutoMapper
+            builder.Services.AddAutoMapper(typeof(MapperProfile));
+
             //set Unit Of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            //Service
+            builder.Services.AddScoped<IStoreService, StoreService>();
 
             var app = builder.Build();
 

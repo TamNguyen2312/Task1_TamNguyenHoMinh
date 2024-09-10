@@ -10,9 +10,9 @@ namespace Task1.DAL.Repositories
 {
     public class RepoBase<T> : IRepoBase<T> where T : class
     {
-        private readonly MasterContext _context;
+        private readonly PubsContext _context;
         protected readonly DbSet<T> _dbSet;
-        public RepoBase(MasterContext context)
+        public RepoBase(PubsContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -33,18 +33,21 @@ namespace Task1.DAL.Repositories
             _dbSet.Remove(entity);
         }
 
-        private IQueryable<T> Get(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties)
+        private IQueryable<T> Get(Expression<Func<T, bool>> predicate = null,
+                                  Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                  bool tracked = true,
+                                  params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _dbSet;
 
-            if(!tracked)
+            if (!tracked)
             {
                 query.AsNoTracking();
             }
 
             includeProperties = includeProperties.Distinct().ToArray();
             Expression<Func<T, object>>[] array = includeProperties;
-            if(includeProperties?.Any() ?? false)
+            if (includeProperties?.Any() ?? false)
             {
                 foreach (var navigationProperty in array)
                 {
@@ -52,10 +55,16 @@ namespace Task1.DAL.Repositories
                 }
             }
 
-            if(predicate != null)
+            if (predicate != null)
             {
                 query.Where(predicate);
             }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
 
             return query;
         }
@@ -70,14 +79,20 @@ namespace Task1.DAL.Repositories
             _dbSet.Update(entity);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null,
+                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                                bool tracked = true,
+                                                params Expression<Func<T, object>>[] includeProperties)
         {
-           return await Get(predicate, tracked, includeProperties).ToListAsync();
+            return await Get(predicate, orderBy, tracked, includeProperties).ToListAsync();
         }
 
-        public async Task<T> GetSingle(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<T> GetSingle(Expression<Func<T, bool>> predicate = null,
+                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                                bool tracked = true,
+                                                params Expression<Func<T, object>>[] includeProperties)
         {
-            return await Get(predicate, tracked, includeProperties).FirstOrDefaultAsync();
+            return await Get(predicate, orderBy, tracked, includeProperties).FirstOrDefaultAsync();
         }
     }
 }

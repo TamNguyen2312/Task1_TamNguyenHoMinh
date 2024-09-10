@@ -13,10 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Helper\" />
-    <Folder Include="Services\Interfaces\" />
-    <Folder Include="Services\Implements\" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

@@ -11,10 +11,10 @@ namespace Task1.DAL.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly MasterContext _masterContext;
+        private readonly PubsContext _masterContext;
         private IDbContextTransaction _transaction;
         private readonly Dictionary<Type, object> _repositories;
-        public UnitOfWork(MasterContext masterContext)
+        public UnitOfWork(PubsContext masterContext)
         {
             _masterContext = masterContext;
             _repositories = new Dictionary<Type, object>();
@@ -62,7 +62,7 @@ namespace Task1.DAL.Repositories
 
         public IRepoBase<T> GetRepo<T>() where T : class
         {
-            if(_repositories.ContainsKey(typeof(T)))
+            if (_repositories.ContainsKey(typeof(T)))
             {
                 return _repositories[typeof(T)] as IRepoBase<T>;
             }

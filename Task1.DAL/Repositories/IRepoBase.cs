@@ -12,8 +12,14 @@ namespace Task1.DAL.Repositories
         public Task CreateAsync(T entity);
         public Task UpdateAsync(T entity);
         public Task DeleteAsync(T entity);
-        public Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties);
-        public Task<T> GetSingle(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties);
+        public Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null,
+                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                                bool tracked = true,
+                                                params Expression<Func<T, object>>[] includeProperties);
+        public Task<T> GetSingle(Expression<Func<T, bool>> predicate = null,
+                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                                bool tracked = true,
+                                                params Expression<Func<T, object>>[] includeProperties);
 
     }
 }
