@@ -42,7 +42,7 @@ namespace Task1.DAL.Repositories
 
             if (!tracked)
             {
-                query.AsNoTracking();
+                query = query.AsNoTracking();
             }
 
             includeProperties = includeProperties.Distinct().ToArray();
@@ -57,7 +57,7 @@ namespace Task1.DAL.Repositories
 
             if (predicate != null)
             {
-                query.Where(predicate);
+                query = query.Where(predicate);
             }
 
             if (orderBy != null)

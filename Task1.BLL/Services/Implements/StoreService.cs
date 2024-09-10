@@ -27,55 +27,126 @@ namespace Task1.BLL.Services.Implements
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
-        public async Task<ResponseAPIDTO<IEnumerable<StoreViewDTO>>> GetAllStoreAsync(GetStoresDTO getStoresDTO, int page)
+        public async Task<ResponseApiDTO> GetAllStoreAsync(GetStoresDTO getStoresDTO, int page)
         {
 
-            var stores = await unitOfWork.GetRepo<Store>().GetAllAsync(null,
+            try
+            {
+                var stores = await unitOfWork.GetRepo<Store>().GetAllAsync(null,
                                                                         r => r.OrderBy(q => q.StorName),
                                                                         false);
-            stores = stores.AsQueryable();
 
-            if(getStoresDTO.StorId != null)
-            {
-                stores = stores.Where(x => x.StorId.Equals(getStoresDTO.StorId));
+                if (getStoresDTO.StorId != null)
+                {
+                    stores = stores.Where(x => x.StorId.Equals(getStoresDTO.StorId));
+                }
+
+                if (getStoresDTO.StorName != null)
+                {
+                    stores = stores.Where(x => x.StorName.IndexOf(getStoresDTO.StorName, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                if (getStoresDTO.StorAddress != null)
+                {
+                    stores = stores.Where(x => x.StorAddress.IndexOf(getStoresDTO.StorAddress, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                if (getStoresDTO.City != null)
+                {
+                    stores = stores.Where(x => x.City.IndexOf(getStoresDTO.City, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                if (getStoresDTO.State != null)
+                {
+                    stores = stores.Where(x => x.State.IndexOf(getStoresDTO.State, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                if (getStoresDTO.Zip != null)
+                {
+                    stores = stores.Where(x => x.Zip.IndexOf(getStoresDTO.Zip, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                var results = mapper.Map<List<StoreViewDTO>>(stores);
+
+                var pageResults = PaginatedList<StoreViewDTO>.Create(results, page, PAGE_SIZE);
+
+                if (pageResults.IsNullOrEmpty())
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = true,
+                        ErrorMessage = new List<string> { $"Store not found" },
+                        StatusCode = HttpStatusCode.OK,
+                        Result = null
+                    };
+                }
+
+                return new ResponseApiDTO
+                {
+
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.OK,
+                    Result = pageResults
+                };
             }
-
-            if(getStoresDTO.StorName != null)
+            catch (Exception ex)
             {
-                stores = stores.Where(x => x.StorName.IndexOf(getStoresDTO.StorName, StringComparison.OrdinalIgnoreCase) >= 0);
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { $"Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
             }
-
-            if (getStoresDTO.StorAddress != null)
+            finally
             {
-                stores = stores.Where(x => x.StorAddress.IndexOf(getStoresDTO.StorAddress, StringComparison.OrdinalIgnoreCase) >= 0);
+                unitOfWork.Dispose();
             }
+        }
 
-            if (getStoresDTO.City != null)
+        public async Task<ResponseApiDTO> GetStoreByIdAsync(string id)
+        {
+            try
             {
-                stores = stores.Where(x => x.City.IndexOf(getStoresDTO.City, StringComparison.OrdinalIgnoreCase) >= 0);
+                var store = await unitOfWork.GetRepo<Store>().GetSingle(x => x.StorId.Equals(id), null, false);
+
+                if (store == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { $"Store not found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+                else
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = true,
+                        ErrorMessage = null,
+                        StatusCode = HttpStatusCode.OK,
+                        Result = mapper.Map<StoreViewDTO>(store)
+                    };
+                }
             }
-
-            if (getStoresDTO.State != null)
+            catch (Exception ex) 
             {
-                stores = stores.Where(x => x.State.IndexOf(getStoresDTO.State, StringComparison.OrdinalIgnoreCase) >= 0);
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { $"Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
             }
-
-            if(getStoresDTO.Zip != null)
+            finally
             {
-                stores = stores.Where(x => x.Zip.IndexOf(getStoresDTO.Zip, StringComparison.OrdinalIgnoreCase) >= 0);
+                unitOfWork.Dispose();
             }
-
-            var results = mapper.Map<List<StoreViewDTO>>(stores);
-
-            var pageResults = PaginatedList<StoreViewDTO>.Create(results, page, PAGE_SIZE);
-
-            return new ResponseAPIDTO<IEnumerable<StoreViewDTO>>
-            {
-                Success = true,
-                Message = "Here is the list of stores",
-                Data = pageResults,
-                Total = results.Count(),
-            };
         }
     }
 }
