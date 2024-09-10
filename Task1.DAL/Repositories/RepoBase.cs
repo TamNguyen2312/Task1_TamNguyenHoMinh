@@ -10,47 +10,32 @@ namespace Task1.DAL.Repositories
 {
     public class RepoBase<T> : IRepoBase<T> where T : class
     {
-        protected readonly MasterContext _context;
-        private DbSet<T> _dbset;
-        public RepoBase()
+        private readonly MasterContext _context;
+        protected readonly DbSet<T> _dbSet;
+        public RepoBase(MasterContext context)
         {
-            _context = new MasterContext();
-            _dbset = _context.Set<T>();
+            _context = context;
+            _dbSet = _context.Set<T>();
         }
 
-        protected DbSet<T> DbSet
-        {
-            get 
-            {
-                if (_dbset != null)
-                {
-                    return _dbset;
-                }
-
-                _dbset = _context.Set<T>();
-                return _dbset;
-            }
-        }
 
         public async Task CreateAsync(T entity)
         {
-            _dbset.AddAsync(entity);
-            await SaveAsync();
+            _dbSet.AddAsync(entity);
         }
 
         public async Task DeleteAsync(T entity)
         {
             if (_context.Entry<T>(entity).State == EntityState.Detached)
             {
-                _dbset.Attach(entity);
+                _dbSet.Attach(entity);
             }
-            _dbset.Remove(entity);
-            await SaveAsync();
+            _dbSet.Remove(entity);
         }
 
         private IQueryable<T> Get(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties)
         {
-            IQueryable<T> query = DbSet;
+            IQueryable<T> query = _dbSet;
 
             if(!tracked)
             {
@@ -75,20 +60,14 @@ namespace Task1.DAL.Repositories
             return query;
         }
 
-        public async Task SaveAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
-
         public async Task UpdateAsync(T entity)
         {
 
             if (_context.Entry<T>(entity).State == EntityState.Detached)
             {
-                _dbset.Attach(entity);
+                _dbSet.Attach(entity);
             }
-            _dbset.Update(entity);
-            await SaveAsync();
+            _dbSet.Update(entity);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null, bool tracked = true, params Expression<Func<T, object>>[] includeProperties)

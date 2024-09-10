@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Task1.DAL;
+using Task1.DAL.Repositories;
 
 namespace Task1.WebAPI
 {
@@ -18,10 +19,22 @@ namespace Task1.WebAPI
             builder.Services.AddSwaggerGen();
 
 
+            //set up policy
+            builder.Services.AddCors(opts =>
+            {
+                opts.AddPolicy("corspolicy", build =>
+                {
+                    build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+                });
+            });
+
             //set up DB
             builder.Services.AddDbContext<MasterContext>(options => {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("pubs"));
             });
+
+            //set Unit Of Work
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 
@@ -32,6 +45,7 @@ namespace Task1.WebAPI
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("corspolicy");
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
