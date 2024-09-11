@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Task1.BLL.DTOs.Response;
-using Task1.BLL.DTOs.Store;
+using Task1.BLL.DTOs.StoreDTOs;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL.Entities;
 

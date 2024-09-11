@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Task1.BLL.DTOs.Response;
-using Task1.BLL.DTOs.Store;
+using Task1.BLL.DTOs.StoreDTOs;
 
 namespace Task1.BLL.Services.Interfaces
 {

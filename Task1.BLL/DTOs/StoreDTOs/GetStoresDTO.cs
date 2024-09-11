@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task1.BLL.DTOs.Store
+namespace Task1.BLL.DTOs.StoreDTOs
 {
     public class GetStoresDTO
     {
