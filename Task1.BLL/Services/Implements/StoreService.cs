@@ -148,5 +148,68 @@ namespace Task1.BLL.Services.Implements
                 unitOfWork.Dispose();
             }
         }
+
+        public async Task<ResponseApiDTO> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var storeRepo = unitOfWork.GetRepo<Store>();
+
+                string storeId;
+                do
+                {
+                    storeId = AutoGenerateStoreId();
+                } while (await storeRepo.GetSingle(s => s.StorId == storeId) != null);
+
+                var store = mapper.Map<Store>(storeRequest);
+                store.StorId = storeId;
+                 
+                var createResult = await unitOfWork.GetRepo<Store>().CreateAsync(store);
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                if(createResult == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Created store failed" },
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Result = null
+                    };
+                }
+                else
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = true,
+                        ErrorMessage = null,
+                        StatusCode = HttpStatusCode.Created,
+                        Result = createResult
+                    };
+                }
+            }
+            catch (Exception ex) 
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
+
+
+        private string AutoGenerateStoreId()
+        {
+            Random random = new Random();
+            int number = random.Next(1000, 10000); // Tạo số ngẫu nhiên từ 1000 đến 9999
+            return number.ToString();
+        }
     }
 }

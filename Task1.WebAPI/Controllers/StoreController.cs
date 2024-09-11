@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using Task1.BLL.DTOs.Response;
 using Task1.BLL.DTOs.Store;
 using Task1.BLL.Services.Interfaces;
+using Task1.DAL.Entities;
 
 namespace Task1.WebAPI.Controllers
 {
@@ -20,7 +22,7 @@ namespace Task1.WebAPI.Controllers
         [HttpGet]
         [Route("GetAllStores")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllStoreAsync([FromQuery]GetStoresDTO getStoresDTO, int page = 1)
+        public async Task<IActionResult> GetAllStoreAsync([FromQuery] GetStoresDTO getStoresDTO, int page = 1)
         {
             var response = await storeService.GetAllStoreAsync(getStoresDTO, page);
 
@@ -29,9 +31,18 @@ namespace Task1.WebAPI.Controllers
 
         [HttpGet/*("{id:int}", Name ="GetStoreById")*/]
         [Route("GetStoreById/{id:int}")]
-        public async Task<IActionResult> GetStoreByIdAsync([FromRoute]string id)
+        public async Task<IActionResult> GetStoreByIdAsync([FromRoute] string id)
         {
             var response = await storeService.GetStoreByIdAsync(id);
+
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("CreateStore")]
+        public async Task<ActionResult<StoreCreateRequestDTO>> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
+        {
+            var response = await storeService.CreateStoreAsync(storeRequest);
 
             return StatusCode((int)response.StatusCode, response);
         }

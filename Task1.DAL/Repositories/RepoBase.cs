@@ -19,18 +19,21 @@ namespace Task1.DAL.Repositories
         }
 
 
-        public async Task CreateAsync(T entity)
+        public async Task<T> CreateAsync(T entity)
         {
-            _dbSet.AddAsync(entity);
+            await _dbSet.AddAsync(entity);
+            return entity;
         }
 
-        public async Task DeleteAsync(T entity)
+        public Task DeleteAsync(T entity)
         {
             if (_context.Entry<T>(entity).State == EntityState.Detached)
             {
                 _dbSet.Attach(entity);
             }
             _dbSet.Remove(entity);
+
+            return Task.CompletedTask;
         }
 
         private IQueryable<T> Get(Expression<Func<T, bool>> predicate = null,
@@ -69,7 +72,7 @@ namespace Task1.DAL.Repositories
             return query;
         }
 
-        public async Task UpdateAsync(T entity)
+        public Task UpdateAsync(T entity)
         {
 
             if (_context.Entry<T>(entity).State == EntityState.Detached)
@@ -77,6 +80,8 @@ namespace Task1.DAL.Repositories
                 _dbSet.Attach(entity);
             }
             _dbSet.Update(entity);
+
+            return Task.CompletedTask;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null,
