@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Task1.BLL.Helper.Validation.Store
+namespace Task1.BLL.Helper.Validation.StoreValid
 {
     public class ZipValidAttribute : ValidationAttribute
     {

@@ -7,7 +7,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Task1.BLL.DTOs.Response;
-using Task1.BLL.DTOs.Store;
+using Task1.BLL.DTOs.StoreDTOs;
+using Task1.BLL.Helper.Extension.Stores;
 using Task1.BLL.Helper.Paging;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL.Entities;
@@ -36,35 +37,7 @@ namespace Task1.BLL.Services.Implements
                                                                         r => r.OrderBy(q => q.StorName),
                                                                         false);
 
-                if (getStoresDTO.StorId != null)
-                {
-                    stores = stores.Where(x => x.StorId.Equals(getStoresDTO.StorId));
-                }
-
-                if (getStoresDTO.StorName != null)
-                {
-                    stores = stores.Where(x => x.StorName.IndexOf(getStoresDTO.StorName, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
-
-                if (getStoresDTO.StorAddress != null)
-                {
-                    stores = stores.Where(x => x.StorAddress.IndexOf(getStoresDTO.StorAddress, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
-
-                if (getStoresDTO.City != null)
-                {
-                    stores = stores.Where(x => x.City.IndexOf(getStoresDTO.City, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
-
-                if (getStoresDTO.State != null)
-                {
-                    stores = stores.Where(x => x.State.IndexOf(getStoresDTO.State, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
-
-                if (getStoresDTO.Zip != null)
-                {
-                    stores = stores.Where(x => x.Zip.IndexOf(getStoresDTO.Zip, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
+                stores = stores.ApplyFilters(getStoresDTO);
 
                 var results = mapper.Map<List<StoreViewDTO>>(stores);
 
@@ -160,7 +133,7 @@ namespace Task1.BLL.Services.Implements
                 string storeId;
                 do
                 {
-                    storeId = AutoGenerateStoreId();
+                    storeId = StoreExtensions.AutoGenerateStoreId();
                 } while (await storeRepo.GetSingle(s => s.StorId == storeId) != null);
 
                 var store = mapper.Map<Store>(storeRequest);
@@ -187,7 +160,7 @@ namespace Task1.BLL.Services.Implements
                         IsSuccess = true,
                         ErrorMessage = null,
                         StatusCode = HttpStatusCode.Created,
-                        Result = createResult
+                        Result = mapper.Map<StoreViewDTO>(createResult)
                     };
                 }
             }
@@ -204,13 +177,6 @@ namespace Task1.BLL.Services.Implements
             }
         }
 
-
-        private string AutoGenerateStoreId()
-        {
-            Random random = new Random();
-            int number = random.Next(1000, 10000); // Tạo số ngẫu nhiên từ 1000 đến 9999
-            return number.ToString();
-        }
 
         public async Task<ResponseApiDTO> UpdateStoreAsync(string id, StoreUpdateRequestDTO storeRequest)
         {

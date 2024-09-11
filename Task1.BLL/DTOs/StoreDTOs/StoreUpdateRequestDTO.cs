@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Task1.BLL.Helper.Validation.Store;
+using Task1.BLL.Helper.Validation.StoreValid;
 
-namespace Task1.BLL.DTOs.Store
+namespace Task1.BLL.DTOs.StoreDTOs
 {
     public class StoreUpdateRequestDTO
     {
