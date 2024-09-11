@@ -14,5 +14,6 @@ namespace Task1.BLL.Services.Interfaces
         Task<ResponseApiDTO> GetStoreByIdAsync(string id);
         Task<ResponseApiDTO> CreateStoreAsync(StoreCreateRequestDTO storeRequest);
         Task<ResponseApiDTO> UpdateStoreAsync(string id, StoreUpdateRequestDTO storeRequest);
+        Task<ResponseApiDTO> DeletetoreAsync(string id);
     }
 }

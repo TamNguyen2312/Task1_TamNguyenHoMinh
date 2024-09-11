@@ -55,5 +55,14 @@ namespace Task1.WebAPI.Controllers
 
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpDelete]
+        [Route("DeleteStore/{id}")]
+        public async Task<IActionResult> DeleteStoreAsync(string id)
+        {
+            var response = await storeService.DeletetoreAsync(id);
+
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

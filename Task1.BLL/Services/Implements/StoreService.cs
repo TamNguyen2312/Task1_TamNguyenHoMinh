@@ -260,5 +260,63 @@ namespace Task1.BLL.Services.Implements
                 };
             }
         }
+
+        public async Task<ResponseApiDTO> DeletetoreAsync(string id)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var storeRepo = unitOfWork.GetRepo<Store>();
+
+                var store = await storeRepo.GetSingle(x => x.StorId.Equals(id), null, false, r => r.Sales);
+
+                if (store == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Store cannot found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+
+                if(store.Sales.Any())
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Cannot delete store that have any Sales" },
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Result = null
+                    };
+                }
+
+                await storeRepo.DeleteAsync(store);
+
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                return new ResponseApiDTO
+                {
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.NoContent,
+                    Result = null
+                };
+            }
+            catch (Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
     }
 }
