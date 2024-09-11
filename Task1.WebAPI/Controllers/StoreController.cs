@@ -30,7 +30,7 @@ namespace Task1.WebAPI.Controllers
         }
 
         [HttpGet/*("{id:int}", Name ="GetStoreById")*/]
-        [Route("GetStoreById/{id:int}")]
+        [Route("GetStoreById/{id}")]
         public async Task<IActionResult> GetStoreByIdAsync([FromRoute] string id)
         {
             var response = await storeService.GetStoreByIdAsync(id);
@@ -43,6 +43,15 @@ namespace Task1.WebAPI.Controllers
         public async Task<ActionResult<StoreCreateRequestDTO>> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
         {
             var response = await storeService.CreateStoreAsync(storeRequest);
+
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("UpdateStore/{id}")]
+        public async Task<IActionResult> UpdateStoreAsync(string id, [FromBody]StoreUpdateRequestDTO storeRequest)
+        {
+            var response = await storeService.UpdateStoreAsync(id, storeRequest);
 
             return StatusCode((int)response.StatusCode, response);
         }

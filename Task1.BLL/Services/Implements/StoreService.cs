@@ -211,5 +211,54 @@ namespace Task1.BLL.Services.Implements
             int number = random.Next(1000, 10000); // Tạo số ngẫu nhiên từ 1000 đến 9999
             return number.ToString();
         }
+
+        public async Task<ResponseApiDTO> UpdateStoreAsync(string id, StoreUpdateRequestDTO storeRequest)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var storeRepo = unitOfWork.GetRepo<Store>();
+
+                var store = await storeRepo.GetSingle(x => x.StorId.Equals(id), null, false);
+
+                if (store == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Store cannot found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+
+                var storeUpdate = mapper.Map(storeRequest, store);
+
+                await storeRepo.UpdateAsync(storeUpdate);
+
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                return new ResponseApiDTO
+                {
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.NoContent,
+                    Result = null
+                };
+            }
+            catch (Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
     }
 }

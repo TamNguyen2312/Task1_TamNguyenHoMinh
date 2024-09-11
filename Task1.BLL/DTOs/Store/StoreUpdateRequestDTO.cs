@@ -8,7 +8,7 @@ using Task1.BLL.Helper.Validation.Store;
 
 namespace Task1.BLL.DTOs.Store
 {
-    public class StoreCreateRequestDTO
+    public class StoreUpdateRequestDTO
     {
         [StringLength(40, ErrorMessage = "Store Name cannot be longer than 40")]
         public string? StorName { get; set; }
