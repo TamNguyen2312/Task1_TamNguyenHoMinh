@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Task1.BLL.DTOs.Store;
+using Task1.BLL.DTOs.TitleDTOs;
 using Task1.DAL.Entities;
 
 namespace Task1.BLL.Helper.Mapper
@@ -17,6 +18,9 @@ namespace Task1.BLL.Helper.Mapper
             CreateMap<Store, StoreViewDTO>().ReverseMap();
             CreateMap<Store, StoreCreateRequestDTO>().ReverseMap();
             CreateMap<Store, StoreUpdateRequestDTO>().ReverseMap();
+
+            //Titles
+            CreateMap<Title, TitleViewDTO>().ReverseMap();
         }
 
     }
