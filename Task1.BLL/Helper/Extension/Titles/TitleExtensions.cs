@@ -39,6 +39,19 @@ namespace Task1.BLL.Helper.Extension.Titles
                 (!filters.ToPubdate.HasValue || x.Pubdate.Date <= filters.ToPubdate.Value.Date)
             );
         }
+
+        public static string GenerateTitleId(string type)
+        {
+            // Lấy 2 chữ cái đầu tiên của TitleType và chuyển thành chữ in hoa
+            string prefix = type.ToString().Substring(0, 2).ToUpper();
+
+            // Tạo 4 con số ngẫu nhiên
+            Random random = new Random();
+            int randomNumber = random.Next(1000, 10000);
+
+            // Kết hợp prefix và random number để tạo TitleId
+            return $"{prefix}{randomNumber}";
+        }
     }
 
 }

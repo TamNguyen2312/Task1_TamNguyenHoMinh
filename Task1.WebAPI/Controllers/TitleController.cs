@@ -24,5 +24,22 @@ namespace Task1.WebAPI.Controllers
 
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("GetTitleById/{id}")]
+        public async Task<IActionResult> GetTitleByIdAsync(string id)
+        {
+            var response = await titleService.GetTitleByIdAsync(id);
+
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("CreateTitle")]
+        public async Task<IActionResult> CreateTitleAsync(TitleCreateRequestDTO titleCreateRequest)
+        {
+            var response = await titleService.CreateTitleAsync(titleCreateRequest);
+            return StatusCode((int)response.StatusCode,response);
+        }
     }
 }

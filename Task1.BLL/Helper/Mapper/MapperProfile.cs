@@ -21,6 +21,7 @@ namespace Task1.BLL.Helper.Mapper
 
             //Titles
             CreateMap<Title, TitleViewDTO>().ReverseMap();
+            CreateMap<Title, TitleCreateRequestDTO>().ReverseMap();
         }
 
     }
