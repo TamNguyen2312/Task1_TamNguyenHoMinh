@@ -1,14 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 using Task1.BLL.DTOs.Response;
-using Task1.BLL.DTOs.Store;
 using Task1.BLL.DTOs.TitleDTOs;
 using Task1.BLL.Helper.Extension.Titles;
 using Task1.BLL.Helper.Paging;
