@@ -24,5 +24,13 @@ namespace Task1.WebAPI.Controllers
             var response = await employeeService.GetAllEmployeeAsync(getEmpDTO, page);
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("GetEmployeeById/{id}")]
+        public async Task<IActionResult> GetEmployeeByIdAsync(string id)
+        {
+            var response = await employeeService.GetEmployeeByIdAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

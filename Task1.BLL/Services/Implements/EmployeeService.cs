@@ -76,5 +76,48 @@ namespace Task1.BLL.Services.Implements
                 unitOfWork.Dispose();
             }
         }
+
+        public async Task<ResponseApiDTO> GetEmployeeByIdAsync(string id)
+        {
+            try
+            {
+                var emp = await unitOfWork.GetRepo<Employee>().GetSingle(x => x.EmpId.Equals(id), null, false);
+
+                if (emp == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { $"Employee not found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+                else
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = true,
+                        ErrorMessage = null,
+                        StatusCode = HttpStatusCode.OK,
+                        Result = mapper.Map<EmpViewDTO>(emp)
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { $"Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+            finally
+            {
+                unitOfWork.Dispose();
+            }
+        }
     }
 }
