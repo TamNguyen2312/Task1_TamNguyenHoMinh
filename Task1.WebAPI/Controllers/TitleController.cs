@@ -49,5 +49,13 @@ namespace Task1.WebAPI.Controllers
             var response = await titleService.UpdateTitleAsync(id, titleUpdateRequest);
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpDelete]
+        [Route("DeleteTitle/{id}")]
+        public async Task<IActionResult> DeleteTitleAsync(string id)
+        {
+            var response = await titleService.DeleteTitleAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }
