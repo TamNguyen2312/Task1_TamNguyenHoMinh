@@ -14,5 +14,6 @@ namespace Task1.BLL.Services.Interfaces
         Task<ResponseApiDTO> GetEmployeeByIdAsync(string id);
         Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest);
         Task<ResponseApiDTO> UpdateEmployeeAsync(string id, EmpUpdateRequestDTO empUpdateRequest);
+        Task<ResponseApiDTO> DeleteEmployeeAsync(string id);
     }
 }

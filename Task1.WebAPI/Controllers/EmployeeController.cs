@@ -47,5 +47,13 @@ namespace Task1.WebAPI.Controllers
             var response = await employeeService.UpdateEmployeeAsync(id, empUpdateRequest);
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpDelete]
+        [Route("DeleteEmployee/{id}")]
+        public async Task<IActionResult> DeleteEmployeeAsync(string id)
+        {
+            var response = await employeeService.DeleteEmployeeAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

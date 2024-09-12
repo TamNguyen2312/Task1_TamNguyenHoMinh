@@ -272,5 +272,52 @@ namespace Task1.BLL.Services.Implements
                 };
             }
         }
+
+        public async Task<ResponseApiDTO> DeleteEmployeeAsync(string id)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var empRepo = unitOfWork.GetRepo<Employee>();
+
+                var emp = await empRepo.GetSingle(x => x.EmpId.Equals(id), null, false, r => r.Job, r => r.Pub);
+
+                if (emp == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Employee cannot found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+
+                await empRepo.DeleteAsync(emp);
+
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                return new ResponseApiDTO
+                {
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.NoContent,
+                    Result = null
+                };
+            }
+            catch (Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
     }
 }
