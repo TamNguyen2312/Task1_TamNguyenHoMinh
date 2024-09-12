@@ -1,14 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Task1.BLL.DTOs.EmployeeDTOs;
 using Task1.BLL.DTOs.Response;
-using Task1.BLL.DTOs.StoreDTOs;
 using Task1.BLL.Helper.Extension.Employees;
 using Task1.BLL.Helper.Paging;
 using Task1.BLL.Services.Interfaces;
@@ -117,6 +111,76 @@ namespace Task1.BLL.Services.Implements
             finally
             {
                 unitOfWork.Dispose();
+            }
+        }
+
+        public async Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var empRepo = unitOfWork.GetRepo<Employee>();
+
+                var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empCreateRequest.JobId, null, false);
+                if(existedJob == null)
+                {
+                    empCreateRequest.JobId = 1;
+                    empCreateRequest.JobLvl = 10;
+                }
+
+                var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(empCreateRequest.PubId), null, false);
+                if (existedPublisher == null)
+                {
+                    empCreateRequest.PubId = "9952";
+                }
+
+                string empId;
+                do
+                {
+                    empId = EmpExtensions.AutoGenerateEmpId(empCreateRequest);
+                } while (await empRepo.GetSingle(s => s.EmpId == empId) != null);
+
+                var emp = mapper.Map<Employee>(empCreateRequest);
+                emp.EmpId = empId;
+                emp.Minit = emp.Minit?.ToUpper();
+
+
+                var createResult = await unitOfWork.GetRepo<Employee>().CreateAsync(emp);
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                if (createResult == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Created employee failed" },
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Result = null
+                    };
+                }
+                else
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = true,
+                        ErrorMessage = null,
+                        StatusCode = HttpStatusCode.Created,
+                        Result = mapper.Map<EmpViewDTO>(createResult)
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
             }
         }
     }

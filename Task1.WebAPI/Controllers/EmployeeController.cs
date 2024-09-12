@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Task1.BLL.DTOs.EmployeeDTOs;
-using Task1.BLL.DTOs.StoreDTOs;
 using Task1.BLL.Services.Interfaces;
 
 namespace Task1.WebAPI.Controllers
@@ -30,6 +29,14 @@ namespace Task1.WebAPI.Controllers
         public async Task<IActionResult> GetEmployeeByIdAsync(string id)
         {
             var response = await employeeService.GetEmployeeByIdAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("CreateEmployee")]
+        public async Task<IActionResult> CreateEmployeeAsync([FromBody] EmpCreateRequestDTO empCreateRequest)
+        {
+            var response = await employeeService.CreateEmployeeAsync(empCreateRequest);
             return StatusCode((int)response.StatusCode, response);
         }
     }

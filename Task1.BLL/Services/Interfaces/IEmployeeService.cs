@@ -12,5 +12,6 @@ namespace Task1.BLL.Services.Interfaces
     {
         Task<ResponseApiDTO> GetAllEmployeeAsync(GetEmpDTO getEmpDTO, int page);
         Task<ResponseApiDTO> GetEmployeeByIdAsync(string id);
+        Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest);
     }
 }

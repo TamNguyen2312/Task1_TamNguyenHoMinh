@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,29 @@ namespace Task1.BLL.Helper.Extension.Employees
 
                 (!filters.HireDate.HasValue || emp.HireDate.Date == filters.HireDate.Value.Date)
             );
+        }
+
+        public static string AutoGenerateEmpId(EmpCreateRequestDTO empCreateRequestDTO)
+        {
+            // Lấy ký tự đầu của Fname và ký tự đầu của Lname
+            char firstChar = char.ToUpper(empCreateRequestDTO.Fname[0]);
+            char thirdChar = char.ToUpper(empCreateRequestDTO.Lname[0]);
+
+            // Lấy ký tự đầu của Minit, nếu null hoặc empty thì gán là '-'
+            char secondChar = !string.IsNullOrEmpty(empCreateRequestDTO.Minit) ? char.ToUpper(empCreateRequestDTO.Minit[0]) : '-';
+
+            // Ký tự thứ tư là một chữ số từ 1 đến 9
+            Random random = new Random();
+            int fourthDigit = random.Next(1, 10);
+
+            // Bốn ký tự tiếp theo là các chữ số (0-9)
+            int nextFourDigits = random.Next(1000, 10000);
+
+            // Lấy ký tự cuối cùng theo Gender
+            string genderSuffix = empCreateRequestDTO.Gender == EmpGender.Male.ToString() ? "M" : "F";
+
+            // Kết hợp thành chuỗi EmpId
+            return $"{firstChar}{secondChar}{thirdChar}{fourthDigit}{nextFourDigits}{genderSuffix}";
         }
     }
 }

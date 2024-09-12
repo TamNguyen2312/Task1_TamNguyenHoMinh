@@ -27,6 +27,7 @@ namespace Task1.BLL.Helper.Mapper
 
             //Employees
             CreateMap<Employee, EmpViewDTO>().ReverseMap();
+            CreateMap<Employee, EmpCreateRequestDTO>().ReverseMap();
         }
 
     }
