@@ -128,6 +128,19 @@ namespace Task1.BLL.Services.Implements
                     empCreateRequest.JobId = 1;
                     empCreateRequest.JobLvl = 10;
                 }
+                else
+                {
+                    if(empCreateRequest.JobLvl < existedJob.MinLvl || empCreateRequest.JobLvl > existedJob.MaxLvl)
+                    {
+                        return new ResponseApiDTO
+                        {
+                            IsSuccess = true,
+                            ErrorMessage = new List<string> { $"Job Id {empCreateRequest.JobId} has the range of Job level from {existedJob.MinLvl} to {existedJob.MaxLvl}" },
+                            StatusCode = HttpStatusCode.BadRequest,
+                            Result = null
+                        };
+                    }
+                }
 
                 var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(empCreateRequest.PubId), null, false);
                 if (existedPublisher == null)
@@ -172,6 +185,82 @@ namespace Task1.BLL.Services.Implements
                 }
             }
             catch(Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
+
+        public async Task<ResponseApiDTO> UpdateEmployeeAsync(string id, EmpUpdateRequestDTO empUpdateRequest)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var empRepo = unitOfWork.GetRepo<Employee>();
+
+                var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empUpdateRequest.JobId, null, false);
+                if (existedJob == null)
+                {
+                    empUpdateRequest.JobId = 1;
+                    empUpdateRequest.JobLvl = 10;
+                }
+                else
+                {
+                    if (empUpdateRequest.JobLvl < existedJob.MinLvl || empUpdateRequest.JobLvl > existedJob.MaxLvl)
+                    {
+                        return new ResponseApiDTO
+                        {
+                            IsSuccess = true,
+                            ErrorMessage = new List<string> { $"Job Id {empUpdateRequest.JobId} has the range of Job level from {existedJob.MinLvl} to {existedJob.MaxLvl}" },
+                            StatusCode = HttpStatusCode.BadRequest,
+                            Result = null
+                        };
+                    }
+                }
+
+                var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(empUpdateRequest.PubId), null, false);
+                if (existedPublisher == null)
+                {
+                    empUpdateRequest.PubId = "9952";
+                }
+
+                var emp = await empRepo.GetSingle(x => x.EmpId.Equals(id), null, false);
+
+                if (emp == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Employee cannot found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+
+                var empUpdate = mapper.Map(empUpdateRequest, emp);
+                empUpdate.Minit = empUpdate.Minit?.ToUpper();
+
+                await empRepo.UpdateAsync(empUpdate);
+
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                return new ResponseApiDTO
+                {
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.NoContent,
+                    Result = null
+                };
+            }
+            catch (Exception ex)
             {
                 await unitOfWork.RollBackAsync();
                 return new ResponseApiDTO

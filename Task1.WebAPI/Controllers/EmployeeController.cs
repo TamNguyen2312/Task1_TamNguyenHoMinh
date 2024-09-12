@@ -39,5 +39,13 @@ namespace Task1.WebAPI.Controllers
             var response = await employeeService.CreateEmployeeAsync(empCreateRequest);
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("UpdateEmployee/{id}")]
+        public async Task<IActionResult> UpdateEmployeeAsync(string id, EmpUpdateRequestDTO empUpdateRequest)
+        {
+            var response = await employeeService.UpdateEmployeeAsync(id, empUpdateRequest);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }
