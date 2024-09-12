@@ -41,5 +41,13 @@ namespace Task1.WebAPI.Controllers
             var response = await titleService.CreateTitleAsync(titleCreateRequest);
             return StatusCode((int)response.StatusCode,response);
         }
+
+        [HttpPut]
+        [Route("UpdateTitle/{id}")]
+        public async Task<IActionResult> UpdateTitleAsync(string id, [FromBody]TitleUpdateRequestDTO titleUpdateRequest)
+        {
+            var response = await titleService.UpdateTitleAsync(id, titleUpdateRequest);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

@@ -13,5 +13,6 @@ namespace Task1.BLL.Services.Interfaces
         public Task<ResponseApiDTO> GetAllTitleAsync(GetTitleDTO getTitleDTO, int page);
         public Task<ResponseApiDTO> GetTitleByIdAsync(string id);
         public Task<ResponseApiDTO> CreateTitleAsync(TitleCreateRequestDTO titleCreateRequest);
+        public Task<ResponseApiDTO> UpdateTitleAsync(string id, TitleUpdateRequestDTO titleUpdateRequest);
     }
 }

@@ -129,7 +129,7 @@ namespace Task1.BLL.Services.Implements
 
                 var existedPubliser = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(titleCreateRequest.PubId));
 
-                if(existedPubliser == null)
+                if (existedPubliser == null)
                 {
                     return new ResponseApiDTO
                     {
@@ -174,7 +174,54 @@ namespace Task1.BLL.Services.Implements
                     };
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
+            {
+                await unitOfWork.RollBackAsync();
+                return new ResponseApiDTO
+                {
+                    IsSuccess = false,
+                    ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Result = null
+                };
+            }
+        }
+
+        public async Task<ResponseApiDTO> UpdateTitleAsync(string id, TitleUpdateRequestDTO titleUpdateRequest)
+        {
+            try
+            {
+                using var transaction = unitOfWork.BeginTransactionAsync();
+
+                var titleRepo = unitOfWork.GetRepo<Title>();
+
+                var existTitle = await titleRepo.GetSingle(x => x.TitleId.Equals(id));
+                if(existTitle == null)
+                {
+                    return new ResponseApiDTO
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = new List<string> { "Title not found" },
+                        StatusCode = HttpStatusCode.NotFound,
+                        Result = null
+                    };
+                }
+
+                var udpateTitle = mapper.Map(titleUpdateRequest, existTitle);
+                await titleRepo.UpdateAsync(udpateTitle);
+
+                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
+
+                return new ResponseApiDTO
+                {
+                    IsSuccess = true,
+                    ErrorMessage = null,
+                    StatusCode = HttpStatusCode.NoContent,
+                    Result = null
+                };
+            }
+            catch (Exception ex)
             {
                 await unitOfWork.RollBackAsync();
                 return new ResponseApiDTO
