@@ -15,6 +15,13 @@ namespace Task1.BLL.DTOs.TitleDTOs
         [StringLength(80, ErrorMessage = "Title1 cannot be longer than 80 characters")]
         public string Title1 { get; set; } = null!;
 
+        [Required(ErrorMessage = "Type is required")]
+        [TypeValid(typeof(TitleTypes), ErrorMessage = "Invalid type specified")]
+        public string Type { get; set; } = null!;
+
+        [StringLength(4, ErrorMessage = "PubId cannot be longer than 4 characters")]
+        public string? PubId { get; set; }
+
         [Range(0, (double)decimal.MaxValue, ErrorMessage = "Price must be a positive value")]
         public decimal? Price { get; set; }
 
