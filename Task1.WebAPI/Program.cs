@@ -45,6 +45,7 @@ namespace Task1.WebAPI
             //Service
             builder.Services.AddScoped<IStoreService, StoreService>();
             builder.Services.AddScoped<ITitleService, TitleService>();
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
             var app = builder.Build();
 

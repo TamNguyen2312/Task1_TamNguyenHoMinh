@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Task1.BLL.DTOs.EmployeeDTOs;
 using Task1.BLL.DTOs.StoreDTOs;
 using Task1.BLL.DTOs.TitleDTOs;
 using Task1.DAL.Entities;
@@ -23,6 +24,9 @@ namespace Task1.BLL.Helper.Mapper
             CreateMap<Title, TitleViewDTO>().ReverseMap();
             CreateMap<Title, TitleCreateRequestDTO>().ReverseMap();
             CreateMap<Title, TitleUpdateRequestDTO>().ReverseMap();
+
+            //Employees
+            CreateMap<Employee, EmpViewDTO>().ReverseMap();
         }
 
     }
