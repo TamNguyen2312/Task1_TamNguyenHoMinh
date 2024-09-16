@@ -32,6 +32,7 @@ namespace Task1.BLL.DTOs.EmployeeDTOs
         public string PubId { get; set; } = null!;
 
         [Required(ErrorMessage = "Hire date is required")]
+        [DataType(DataType.Date)]
         public DateTime HireDate { get; set; } 
     }
 }
