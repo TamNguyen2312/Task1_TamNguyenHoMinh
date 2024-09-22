@@ -6,18 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Task1.DAL.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly PubsContext _masterContext;
+        private readonly IServiceProvider _serviceProvider;
         private IDbContextTransaction _transaction;
-        private readonly Dictionary<Type, object> _repositories;
-        public UnitOfWork(PubsContext masterContext)
+        public UnitOfWork(PubsContext masterContext, IServiceProvider serviceProvider)
         {
             _masterContext = masterContext;
-            _repositories = new Dictionary<Type, object>();
+            _serviceProvider = serviceProvider;
         }
         public async Task BeginTransactionAsync()
         {
@@ -62,14 +63,7 @@ namespace Task1.DAL.Repositories
 
         public IRepoBase<T> GetRepo<T>() where T : class
         {
-            if (_repositories.ContainsKey(typeof(T)))
-            {
-                return _repositories[typeof(T)] as IRepoBase<T>;
-            }
-
-            var repo = new RepoBase<T>(_masterContext);
-            _repositories.Add(typeof(T), repo);
-            return repo;
+            return _serviceProvider.GetRequiredService<IRepoBase<T>>();
         }
 
         public async Task RollBackAsync()

@@ -38,6 +38,10 @@ namespace Task1.WebAPI
 
             //AutoMapper
             builder.Services.AddAutoMapper(typeof(MapperProfile));
+            
+            //set repo base
+            builder.Services.AddScoped(typeof(IRepoBase<>), typeof(RepoBase<>));
+
 
             //set Unit Of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

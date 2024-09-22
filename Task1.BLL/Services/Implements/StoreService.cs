@@ -30,7 +30,6 @@ namespace Task1.BLL.Services.Implements
         }
         public async Task<ResponseApiDTO> GetAllStoreAsync(GetStoresDTO getStoresDTO, int page)
         {
-
             try
             {
                 var stores = await unitOfWork.GetRepo<Store>().GetAllAsync(null,
@@ -73,10 +72,6 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> GetStoreByIdAsync(string id)
@@ -116,25 +111,20 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
         {
+            await unitOfWork.BeginTransactionAsync();
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
-
                 var storeRepo = unitOfWork.GetRepo<Store>();
 
                 string storeId;
                 do
                 {
                     storeId = StoreExtensions.AutoGenerateStoreId();
-                } while (await storeRepo.GetSingle(s => s.StorId == storeId) != null);
+                } while ((await storeRepo.GetSingle(s => s.StorId.Equals(storeId))) != null);
 
                 var store = mapper.Map<Store>(storeRequest);
                 store.StorId = storeId;
