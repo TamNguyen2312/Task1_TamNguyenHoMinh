@@ -10,7 +10,7 @@ namespace Task1.BLL.Services.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<ResponseApiDTO> GetAllEmployeeAsync(GetEmpDTO getEmpDTO, int page);
+        Task<ResponseApiDTO> GetAllEmployeeAsync(string? search, int page);
         Task<ResponseApiDTO> GetEmployeeByIdAsync(string id);
         Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest);
         Task<ResponseApiDTO> UpdateEmployeeAsync(string id, EmpUpdateRequestDTO empUpdateRequest);

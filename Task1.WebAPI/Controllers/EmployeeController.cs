@@ -18,9 +18,9 @@ namespace Task1.WebAPI.Controllers
 
         [HttpGet]
         [Route("GetAllEmployees")]
-        public async Task<IActionResult> GetAllEmployeesAsync([FromQuery] GetEmpDTO getEmpDTO, [FromQuery] int page = 1)
+        public async Task<IActionResult> GetAllEmployeesAsync([FromQuery] string? search, [FromQuery] int page = 1)
         {
-            var response = await employeeService.GetAllEmployeeAsync(getEmpDTO, page);
+            var response = await employeeService.GetAllEmployeeAsync(search, page);
             return StatusCode((int)response.StatusCode, response);
         }
 

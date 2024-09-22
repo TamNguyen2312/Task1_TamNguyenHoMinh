@@ -18,9 +18,9 @@ namespace Task1.WebAPI.Controllers
 
         [HttpGet]
         [Route("GetAllTitles")]
-        public async Task<IActionResult> GetAllTitleAsync([FromQuery]GetTitleDTO getTitleDTO, int page = 1)
+        public async Task<IActionResult> GetAllTitleAsync([FromQuery]string? search, int page = 1)
         {
-            var response = await titleService.GetAllTitleAsync(getTitleDTO, page);
+            var response = await titleService.GetAllTitleAsync(search, page);
 
             return StatusCode((int)response.StatusCode, response);
         }

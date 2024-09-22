@@ -10,6 +10,9 @@
     <ProjectReference Include="..\Task1.DAL\Task1.DAL.csproj">
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Task1.Util\Task1.Util.csproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

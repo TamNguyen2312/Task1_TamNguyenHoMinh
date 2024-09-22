@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Task1.Util.Queries;
 
 namespace Task1.DAL.Repositories
 {
@@ -36,43 +38,37 @@ namespace Task1.DAL.Repositories
             return Task.CompletedTask;
         }
 
-        private IQueryable<T> Get(Expression<Func<T, bool>> predicate = null,
-                                  Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                                  bool tracked = true,
-                                  params Expression<Func<T, object>>[] includeProperties)
-        {
-            IQueryable<T> query = _dbSet;
+		private IQueryable<T> Get(QueryOptions<T> options)
+		{
+			IQueryable<T> query = _dbSet;
 
-            if (!tracked)
-            {
-                query = query.AsNoTracking();
-            }
+			if (!options.Tracked)
+			{
+				query = query.AsNoTracking();
+			}
 
-            includeProperties = includeProperties.Distinct().ToArray();
-            Expression<Func<T, object>>[] array = includeProperties;
-            if (includeProperties?.Any() ?? false)
-            {
-                foreach (var navigationProperty in array)
-                {
-                    query = query.Include(navigationProperty);
-                }
-            }
+			if (options.IncludeProperties?.Any() ?? false)
+			{
+				foreach (var includeProperty in options.IncludeProperties)
+				{
+					query = query.Include(includeProperty);
+				}
+			}
 
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
+			if (options.Predicate != null)
+			{
+				query = query.Where(options.Predicate);
+			}
 
-            if (orderBy != null)
-            {
-                query = orderBy(query);
-            }
+			if (options.OrderBy != null)
+			{
+				query = options.OrderBy(query);
+			}
 
+			return query;
+		}
 
-            return query;
-        }
-
-        public Task UpdateAsync(T entity)
+		public Task UpdateAsync(T entity)
         {
 
             if (_context.Entry<T>(entity).State == EntityState.Detached)
@@ -84,20 +80,14 @@ namespace Task1.DAL.Repositories
             return Task.CompletedTask;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null,
-                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                                                bool tracked = true,
-                                                params Expression<Func<T, object>>[] includeProperties)
+        public async Task<IEnumerable<T>> GetAllAsync(QueryOptions<T> options)
         {
-            return await Get(predicate, orderBy, tracked, includeProperties).ToListAsync();
+            return await Get(options).ToListAsync();
         }
 
-        public async Task<T> GetSingle(Expression<Func<T, bool>> predicate = null,
-                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                                                bool tracked = true,
-                                                params Expression<Func<T, object>>[] includeProperties)
-        {
-            return await Get(predicate, orderBy, tracked, includeProperties).FirstOrDefaultAsync();
+        public async Task<T> GetSingleAsync(QueryOptions<T> options)
+		{
+            return await Get(options).FirstOrDefaultAsync();
         }
     }
 }

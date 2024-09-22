@@ -22,9 +22,9 @@ namespace Task1.WebAPI.Controllers
         [HttpGet]
         [Route("GetAllStores")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllStoreAsync([FromQuery] GetStoresDTO getStoresDTO, int page = 1)
+        public async Task<IActionResult> GetAllStoreAsync([FromQuery] string? search, int page = 1)
         {
-            var response = await storeService.GetAllStoreAsync(getStoresDTO, page);
+            var response = await storeService.GetAllStoreAsync(search, page);
 
             return StatusCode((int)response.StatusCode, response);
         }

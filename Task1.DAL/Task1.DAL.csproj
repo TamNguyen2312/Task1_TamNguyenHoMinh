@@ -21,4 +21,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Task1.Util\Task1.Util.csproj">
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+
 </Project>

@@ -8,6 +8,8 @@ using Task1.BLL.Helper.Paging;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL.Entities;
 using Task1.DAL.Repositories;
+using Task1.Util.Filters;
+using Task1.Util.Queries;
 
 namespace Task1.BLL.Services.Implements
 {
@@ -23,13 +25,26 @@ namespace Task1.BLL.Services.Implements
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
-        public async Task<ResponseApiDTO> GetAllEmployeeAsync(GetEmpDTO getEmpDTO, int page)
+        public async Task<ResponseApiDTO> GetAllEmployeeAsync(string? search, int page)
         {
             try
             {
-                var emps = await unitOfWork.GetRepo<Employee>().GetAllAsync(null, x => x.OrderBy(r => r.Fname), false);
+				var empRepo = unitOfWork.GetRepo<Employee>();
 
-                emps = emps.ApplyFilter(getEmpDTO);
+                var queryBuilder = new QueryBuilder<Employee>()
+                                    .WithOrderBy(x => x.OrderBy(r => r.Fname))
+                                    .WithTracking(false)
+                                    .WithInclude(x => x.Pub, r => r.Job);
+
+				if (!string.IsNullOrEmpty(search))
+				{
+					var predicate = FilterHelper.BuildSearchExpression<Employee>(search);
+					queryBuilder.WithPredicate(predicate);
+				}
+
+                var queryOptions = queryBuilder.Build();
+
+				var emps = await unitOfWork.GetRepo<Employee>().GetAllAsync(queryOptions);
 
                 var results = mapper.Map<List<EmpViewDTO>>(emps);
 
@@ -65,17 +80,20 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> GetEmployeeByIdAsync(string id)
         {
             try
             {
-                var emp = await unitOfWork.GetRepo<Employee>().GetSingle(x => x.EmpId.Equals(id), null, false);
+				var empRepo = unitOfWork.GetRepo<Employee>();
+
+				var queryOptions = new QueryBuilder<Employee>()
+								   .WithPredicate(x => x.EmpId.Equals(id))
+								   .WithTracking(false)
+								   .Build();
+
+				var emp = await empRepo.GetSingleAsync(queryOptions);
 
                 if (emp == null)
                 {
@@ -108,10 +126,6 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest)
@@ -122,7 +136,10 @@ namespace Task1.BLL.Services.Implements
 				await unitOfWork.BeginTransactionAsync();
 				var empRepo = unitOfWork.GetRepo<Employee>();
 
-                var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empCreateRequest.JobId, null, false);
+				var existedJob = await unitOfWork.GetRepo<Job>().GetSingleAsync(new QueryBuilder<Job>()
+                                                                                .WithPredicate(x => x.JobId == (empCreateRequest.JobId))
+                                                                                .WithTracking(false)
+                                                                                .Build());
                 if(existedJob == null)
                 {
                     empCreateRequest.JobId = 1;
@@ -142,7 +159,10 @@ namespace Task1.BLL.Services.Implements
                     }
                 }
 
-                var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(empCreateRequest.PubId), null, false);
+                var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingleAsync(new QueryBuilder<Publisher>()
+																				.WithPredicate(x => x.PubId.Equals(empCreateRequest.PubId))
+																				.WithTracking(false)
+																				.Build());
                 if (existedPublisher == null)
                 {
                     empCreateRequest.PubId = "9952";
@@ -152,7 +172,10 @@ namespace Task1.BLL.Services.Implements
                 do
                 {
                     empId = EmpExtensions.AutoGenerateEmpId(empCreateRequest);
-                } while (await empRepo.GetSingle(s => s.EmpId == empId) != null);
+                } while (await empRepo.GetSingleAsync(new QueryBuilder<Employee>()
+														.WithPredicate(x => x.EmpId.Equals(empId))
+													    .WithTracking(false)
+													    .Build()) != null);
 
                 var emp = mapper.Map<Employee>(empCreateRequest);
                 emp.EmpId = empId;
@@ -205,7 +228,10 @@ namespace Task1.BLL.Services.Implements
 
 				var empRepo = unitOfWork.GetRepo<Employee>();
 
-                var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empUpdateRequest.JobId, null, false);
+                var existedJob = await unitOfWork.GetRepo<Job>().GetSingleAsync(new QueryBuilder<Job>()
+														.WithPredicate(x => x.JobId == (empUpdateRequest.JobId))
+														.WithTracking(false)
+														.Build());
                 if (existedJob == null)
                 {
                     empUpdateRequest.JobId = 1;
@@ -225,13 +251,19 @@ namespace Task1.BLL.Services.Implements
                     }
                 }
 
-                var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(empUpdateRequest.PubId), null, false);
-                if (existedPublisher == null)
+				var existedPublisher = await unitOfWork.GetRepo<Publisher>().GetSingleAsync(new QueryBuilder<Publisher>()
+																				 .WithPredicate(x => x.PubId.Equals(empUpdateRequest.PubId))
+																				 .WithTracking(false)
+																				 .Build());
+				if (existedPublisher == null)
                 {
                     empUpdateRequest.PubId = "9952";
                 }
 
-                var emp = await empRepo.GetSingle(x => x.EmpId.Equals(id), null, false);
+                var emp = await empRepo.GetSingleAsync(new QueryBuilder<Employee>()
+														.WithPredicate(x => x.EmpId.Equals(id))
+														.WithTracking(false)
+														.Build());
 
                 if (emp == null)
                 {
@@ -280,8 +312,13 @@ namespace Task1.BLL.Services.Implements
 				await unitOfWork.BeginTransactionAsync();
 
 				var empRepo = unitOfWork.GetRepo<Employee>();
+                var queryOptions = new QueryBuilder<Employee>()
+                                        .WithPredicate(x => x.EmpId.Equals(id))
+                                        .WithTracking(false)
+                                        .WithInclude(x => x.Job, x => x.Pub)
+                                        .Build();
 
-                var emp = await empRepo.GetSingle(x => x.EmpId.Equals(id), null, false, r => r.Job, r => r.Pub);
+                var emp = await empRepo.GetSingleAsync(queryOptions);
 
                 if (emp == null)
                 {

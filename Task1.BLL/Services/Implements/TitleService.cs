@@ -8,6 +8,8 @@ using Task1.BLL.Helper.Paging;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL.Entities;
 using Task1.DAL.Repositories;
+using Task1.Util.Filters;
+using Task1.Util.Queries;
 
 namespace Task1.BLL.Services.Implements
 {
@@ -24,15 +26,26 @@ namespace Task1.BLL.Services.Implements
             this.mapper = mapper;
         }
 
-        public async Task<ResponseApiDTO> GetAllTitleAsync(GetTitleDTO getTitleDTO, int page)
+        public async Task<ResponseApiDTO> GetAllTitleAsync(string? search, int page)
         {
             try
             {
                 var titleRepo = unitOfWork.GetRepo<Title>();
 
-                var titles = await titleRepo.GetAllAsync(null, x => x.OrderBy(r => r.Title1), false);
+				var queryBuilder = new QueryBuilder<Title>()
+									.WithOrderBy(x => x.OrderBy(r => r.Title1))
+									.WithTracking(false)
+									.WithInclude(r => r.Sales);
 
-                titles = titles.ApplyFilter(getTitleDTO);
+				if (!string.IsNullOrEmpty(search))
+				{
+					var predicate = FilterHelper.BuildSearchExpression<Title>(search);
+					queryBuilder.WithPredicate(predicate);
+				}
+
+				var queryOptions = queryBuilder.Build();
+
+                var titles = await titleRepo.GetAllAsync(queryOptions);
 
                 var results = mapper.Map<List<TitleViewDTO>>(titles);
 
@@ -68,10 +81,6 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> GetTitleByIdAsync(string id)
@@ -79,8 +88,12 @@ namespace Task1.BLL.Services.Implements
             try
             {
                 var titleRepo = unitOfWork.GetRepo<Title>();
+                var queryOptions = new QueryBuilder<Title>()
+                                        .WithPredicate(x => x.TitleId.Equals(id))
+                                        .WithTracking(false)
+                                        .Build();
 
-                var title = await titleRepo.GetSingle(x => x.TitleId.Equals(id), null, false);
+                var title = await titleRepo.GetSingleAsync(queryOptions);
 
                 if (title == null)
                 {
@@ -113,10 +126,6 @@ namespace Task1.BLL.Services.Implements
                     Result = null
                 };
             }
-            finally
-            {
-                unitOfWork.Dispose();
-            }
         }
 
         public async Task<ResponseApiDTO> CreateTitleAsync(TitleCreateRequestDTO titleCreateRequest)
@@ -127,7 +136,9 @@ namespace Task1.BLL.Services.Implements
 
 				var titleRepo = unitOfWork.GetRepo<Title>();
 
-                var existedPubliser = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(titleCreateRequest.PubId));
+                var existedPubliser = await unitOfWork.GetRepo<Publisher>().GetSingleAsync(new QueryBuilder<Publisher>()
+                                                                                            .WithPredicate(x => x.PubId.Equals(titleCreateRequest.PubId))
+                                                                                            .Build());
 
                 if (existedPubliser == null)
                 {
@@ -144,7 +155,7 @@ namespace Task1.BLL.Services.Implements
                 do
                 {
                     titleId = TitleExtensions.GenerateTitleId(titleCreateRequest.Type);
-                } while (await titleRepo.GetSingle(s => s.TitleId == titleId) != null);
+                } while (await titleRepo.GetSingleAsync(new QueryBuilder<Title>().WithPredicate(x => x.TitleId.Equals(titleId)).Build()) != null);
 
                 var title = mapper.Map<Title>(titleCreateRequest);
                 title.TitleId = titleId;
@@ -195,7 +206,9 @@ namespace Task1.BLL.Services.Implements
 
 				var titleRepo = unitOfWork.GetRepo<Title>();
 
-                var existTitle = await titleRepo.GetSingle(x => x.TitleId.Equals(id));
+                var existTitle = await titleRepo.GetSingleAsync(new QueryBuilder<Title>()
+                                                                .WithPredicate(x => x.TitleId.Equals(id))
+                                                                .Build());
                 if(existTitle == null)
                 {
                     return new ResponseApiDTO
@@ -240,8 +253,12 @@ namespace Task1.BLL.Services.Implements
             {
 				await unitOfWork.BeginTransactionAsync();
 				var titleRepo = unitOfWork.GetRepo<Title>();
+                var queryOptions = new QueryBuilder<Title>()
+                                        .WithPredicate(x => x.TitleId.Equals(id))
+                                        .WithInclude(r => r.Sales, r => r.Titleauthors)
+                                        .Build();
 
-                var existTitle =  await titleRepo.GetSingle(x => x.TitleId.Equals(id), null, false, r => r.Sales, r => r.Titleauthors);
+                var existTitle =  await titleRepo.GetSingleAsync(queryOptions);
                 if (existTitle == null)
                 {
                     return new ResponseApiDTO

@@ -5,6 +5,7 @@ using Task1.BLL.Services.Implements;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL;
 using Task1.DAL.Repositories;
+using Task1.Util.Queries;
 
 namespace Task1.WebAPI
 {
@@ -38,10 +39,9 @@ namespace Task1.WebAPI
 
             //AutoMapper
             builder.Services.AddAutoMapper(typeof(MapperProfile));
-            
+
             //set repo base
             builder.Services.AddScoped(typeof(IRepoBase<>), typeof(RepoBase<>));
-
 
             //set Unit Of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
