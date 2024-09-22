@@ -123,9 +123,9 @@ namespace Task1.BLL.Services.Implements
         {
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
+				await unitOfWork.BeginTransactionAsync();
 
-                var titleRepo = unitOfWork.GetRepo<Title>();
+				var titleRepo = unitOfWork.GetRepo<Title>();
 
                 var existedPubliser = await unitOfWork.GetRepo<Publisher>().GetSingle(x => x.PubId.Equals(titleCreateRequest.PubId));
 
@@ -191,9 +191,9 @@ namespace Task1.BLL.Services.Implements
         {
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
+				await unitOfWork.BeginTransactionAsync();
 
-                var titleRepo = unitOfWork.GetRepo<Title>();
+				var titleRepo = unitOfWork.GetRepo<Title>();
 
                 var existTitle = await titleRepo.GetSingle(x => x.TitleId.Equals(id));
                 if(existTitle == null)
@@ -238,8 +238,8 @@ namespace Task1.BLL.Services.Implements
         {
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
-                var titleRepo = unitOfWork.GetRepo<Title>();
+				await unitOfWork.BeginTransactionAsync();
+				var titleRepo = unitOfWork.GetRepo<Title>();
 
                 var existTitle =  await titleRepo.GetSingle(x => x.TitleId.Equals(id), null, false, r => r.Sales, r => r.Titleauthors);
                 if (existTitle == null)

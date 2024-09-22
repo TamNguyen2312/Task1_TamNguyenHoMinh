@@ -116,11 +116,11 @@ namespace Task1.BLL.Services.Implements
 
         public async Task<ResponseApiDTO> CreateEmployeeAsync(EmpCreateRequestDTO empCreateRequest)
         {
-            try
+			
+			try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
-
-                var empRepo = unitOfWork.GetRepo<Employee>();
+				await unitOfWork.BeginTransactionAsync();
+				var empRepo = unitOfWork.GetRepo<Employee>();
 
                 var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empCreateRequest.JobId, null, false);
                 if(existedJob == null)
@@ -201,9 +201,9 @@ namespace Task1.BLL.Services.Implements
         {
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
+				await unitOfWork.BeginTransactionAsync();
 
-                var empRepo = unitOfWork.GetRepo<Employee>();
+				var empRepo = unitOfWork.GetRepo<Employee>();
 
                 var existedJob = await unitOfWork.GetRepo<Job>().GetSingle(x => x.JobId == empUpdateRequest.JobId, null, false);
                 if (existedJob == null)
@@ -277,9 +277,9 @@ namespace Task1.BLL.Services.Implements
         {
             try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
+				await unitOfWork.BeginTransactionAsync();
 
-                var empRepo = unitOfWork.GetRepo<Employee>();
+				var empRepo = unitOfWork.GetRepo<Employee>();
 
                 var emp = await empRepo.GetSingle(x => x.EmpId.Equals(id), null, false, r => r.Job, r => r.Pub);
 

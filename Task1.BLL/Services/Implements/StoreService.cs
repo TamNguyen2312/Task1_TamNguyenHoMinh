@@ -115,10 +115,11 @@ namespace Task1.BLL.Services.Implements
 
         public async Task<ResponseApiDTO> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
         {
-            await unitOfWork.BeginTransactionAsync();
+            
             try
             {
-                var storeRepo = unitOfWork.GetRepo<Store>();
+				await unitOfWork.BeginTransactionAsync();
+				var storeRepo = unitOfWork.GetRepo<Store>();
 
                 string storeId;
                 do
@@ -170,11 +171,11 @@ namespace Task1.BLL.Services.Implements
 
         public async Task<ResponseApiDTO> UpdateStoreAsync(string id, StoreUpdateRequestDTO storeRequest)
         {
-            try
+			
+			try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
-
-                var storeRepo = unitOfWork.GetRepo<Store>();
+				await unitOfWork.BeginTransactionAsync();
+				var storeRepo = unitOfWork.GetRepo<Store>();
 
                 var store = await storeRepo.GetSingle(x => x.StorId.Equals(id), null, false);
 
@@ -219,11 +220,11 @@ namespace Task1.BLL.Services.Implements
 
         public async Task<ResponseApiDTO> DeletetoreAsync(string id)
         {
-            try
+			
+			try
             {
-                using var transaction = unitOfWork.BeginTransactionAsync();
-
-                var storeRepo = unitOfWork.GetRepo<Store>();
+				await unitOfWork.BeginTransactionAsync();
+				var storeRepo = unitOfWork.GetRepo<Store>();
 
                 var store = await storeRepo.GetSingle(x => x.StorId.Equals(id), null, false, r => r.Sales);
 
