@@ -15,7 +15,7 @@ using Task1.Util.Queries;
 
 namespace Task1.BLL.Services
 {
-	public abstract class BaseServices<TEntity, TViewDto, TCreateDto, TUpdateDto> where TEntity : class
+	public abstract class BaseServices<TEntity, TDetailDto, TCreateDto, TUpdateDto> where TEntity : class
 	{
 		protected readonly IUnitOfWork _unitOfWork;
 		protected readonly IMapper _mapper;
@@ -40,69 +40,49 @@ namespace Task1.BLL.Services
 			return queryBuilder;
 		}
 
-		public async Task<ResponseApiDTO> GetAllAsync(string? search, int page)
+		public async Task<PaginatedList<TDetailDto>> GetAllAsync(string? search, int page)
 		{
-			var queryBuilder = CreateQueryBuilder(search)
-								.WithOrderBy(x => x.OrderBy(e => e.ToString()));  // Default order
-
-			var queryOptions = queryBuilder.Build();
-			var repo = _unitOfWork.GetRepo<TEntity>();
-			var entities = await repo.GetAllAsync(queryOptions);
-
-			var results = _mapper.Map<List<TViewDto>>(entities);
-			var pageResults = PaginatedList<TViewDto>.Create(results, page, PAGE_SIZE);
-
-			if (pageResults.IsNullOrEmpty())
+			try
 			{
-				return new ResponseApiDTO
-				{
-					IsSuccess = true,
-					ErrorMessage = new List<string> { $"{typeof(TEntity).Name} not found" },
-					StatusCode = HttpStatusCode.OK,
-					Result = null
-				};
+				var queryBuilder = CreateQueryBuilder(search);
+				var queryOptions = queryBuilder.Build();
+
+				var repo = _unitOfWork.GetRepo<TEntity>();
+				var entities = await repo.GetAllAsync(queryOptions);
+
+				var results = _mapper.Map<List<TDetailDto>>(entities);
+				var pageResults = PaginatedList<TDetailDto>.Create(results, page, PAGE_SIZE);
+
+				return pageResults;
 			}
-
-			return new ResponseApiDTO
+			catch (Exception)
 			{
-				IsSuccess = true,
-				ErrorMessage = null,
-				StatusCode = HttpStatusCode.OK,
-				Result = pageResults
-			};
+				return null;
+				throw;
+			}
+			
 		}
 
-		public async Task<ResponseApiDTO> GetByIdAsync(string id)
+		public async Task<TDetailDto> GetByIdAsync(QueryBuilder<TEntity> queryBuilder)
 		{
-			var queryBuilder = CreateQueryBuilder()
-								.WithPredicate(x => x.Equals(id));
-
-			var repo = _unitOfWork.GetRepo<TEntity>();
-
-			var queryOptions = queryBuilder.Build();
-
-			var entity = await repo.GetSingleAsync(queryOptions);
-			if (entity == null)
+			try
 			{
-				return new ResponseApiDTO
-				{
-					IsSuccess = false,
-					ErrorMessage = new List<string> { $"{typeof(TEntity).Name} not found" },
-					StatusCode = HttpStatusCode.NotFound,
-					Result = null
-				};
+				var repo = _unitOfWork.GetRepo<TEntity>();
+
+				var queryOptions = queryBuilder.Build();
+
+				var entity = await repo.GetSingleAsync(queryOptions);
+
+				return _mapper.Map<TDetailDto>(entity);
 			}
-
-			return new ResponseApiDTO
+			catch(Exception)
 			{
-				IsSuccess = true,
-				ErrorMessage = null,
-				StatusCode = HttpStatusCode.OK,
-				Result = _mapper.Map<TViewDto>(entity)
-			};
+				return default(TDetailDto);
+				throw;
+			}
 		}
 
-		public async Task<ResponseApiDTO> CreateAsync(TCreateDto createDto)
+		public async Task<TDetailDto> CreateAsync(TCreateDto createDto)
 		{
 			try
 			{
@@ -113,116 +93,83 @@ namespace Task1.BLL.Services
 				await _unitOfWork.SaveChangesAsync();
 				await _unitOfWork.CommitTransactionAsync();
 
-				if (createResult == null)
-				{
-					return new ResponseApiDTO
-					{
-						IsSuccess = false,
-						ErrorMessage = new List<string> { $"Created {typeof(TEntity).Name} failed" },
-						StatusCode = HttpStatusCode.BadRequest,
-						Result = null
-					};
-				}
-
-				return new ResponseApiDTO
-				{
-					IsSuccess = true,
-					ErrorMessage = null,
-					StatusCode = HttpStatusCode.Created,
-					Result = _mapper.Map<TViewDto>(createResult)
-				};
+				return _mapper.Map<TDetailDto>(createResult);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				await _unitOfWork.RollBackAsync();
-				return new ResponseApiDTO
-				{
-					IsSuccess = false,
-					ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
-					StatusCode = HttpStatusCode.InternalServerError,
-					Result = null
-				};
+				return default(TDetailDto);
+				throw;
 			}
 		}
 
-		public async Task<ResponseApiDTO> UpdateAsync(string id, TUpdateDto updateDto)
-		{
-			var repo = _unitOfWork.GetRepo<TEntity>();
-			var entity = await repo.GetSingleAsync(CreateQueryBuilder()
-												   .WithPredicate(x => x.Equals(id))
-												   .WithTracking(true)
-												   .Build());
-
-			if (entity == null)
-			{
-				return new ResponseApiDTO
-				{
-					IsSuccess = false,
-					ErrorMessage = new List<string> { $"{typeof(TEntity).Name} not found" },
-					StatusCode = HttpStatusCode.NotFound,
-					Result = null
-				};
-			}
-
-			var updatedEntity = _mapper.Map(updateDto, entity);
-			await repo.UpdateAsync(updatedEntity);
-			await _unitOfWork.SaveChangesAsync();
-
-			return new ResponseApiDTO
-			{
-				IsSuccess = true,
-				ErrorMessage = null,
-				StatusCode = HttpStatusCode.NoContent,
-				Result = null
-			};
-		}
-
-		public async Task<ResponseApiDTO> DeleteAsync(string id)
+		public async Task<TDetailDto> UpdateAsync(QueryBuilder<TEntity> queryBuilder, TUpdateDto updateDto)
 		{
 			try
 			{
 				await _unitOfWork.BeginTransactionAsync();
 				var repo = _unitOfWork.GetRepo<TEntity>();
-				var entity = await repo.GetSingleAsync(CreateQueryBuilder()
-												   .WithPredicate(x => x.Equals(id))
-												   .WithTracking(true)
-												   .Build());
+				var entity = await repo.GetSingleAsync(queryBuilder.Build());
 
 				if (entity == null)
 				{
-					return new ResponseApiDTO
+					throw new Exception($"{typeof(TEntity).Name} not found");
+				}
+
+				var updatedEntity = _mapper.Map(updateDto, entity);
+				await repo.UpdateAsync(updatedEntity);
+				await _unitOfWork.SaveChangesAsync();
+				await _unitOfWork.CommitTransactionAsync();
+
+				return _mapper.Map<TDetailDto>(updatedEntity);
+			}
+			catch (Exception)
+			{
+				await _unitOfWork.RollBackAsync();
+				return default(TDetailDto);
+				throw;
+			}
+		}
+
+		public async Task<bool> DeleteAsync(QueryBuilder<TEntity> queryBuilder)
+		{
+			try
+			{
+				await _unitOfWork.BeginTransactionAsync();
+				var repo = _unitOfWork.GetRepo<TEntity>();
+				var entity = await repo.GetSingleAsync(queryBuilder.Build());
+
+				if (entity == null)
+				{
+					throw new Exception($"{typeof(TEntity).Name} not found");
+				}
+
+				var navigationProperties = typeof(TEntity).GetProperties()
+					.Where(p => typeof(IEnumerable<object>).IsAssignableFrom(p.PropertyType) && p.PropertyType != typeof(string));
+
+				foreach (var property in navigationProperties)
+				{
+					var value = property.GetValue(entity) as IEnumerable<object>;
+
+					if (value != null && value.Any()) 
 					{
-						IsSuccess = false,
-						ErrorMessage = new List<string> { $"{typeof(TEntity).Name} not found" },
-						StatusCode = HttpStatusCode.NotFound,
-						Result = null
-					};
+						throw new Exception($"Cannot delete {typeof(TEntity).Name} because {property.Name} contains related entities.");
+					}
 				}
 
 				await repo.DeleteAsync(entity);
 				await _unitOfWork.SaveChangesAsync();
 				await _unitOfWork.CommitTransactionAsync();
 
-				return new ResponseApiDTO
-				{
-					IsSuccess = true,
-					ErrorMessage = null,
-					StatusCode = HttpStatusCode.NoContent,
-					Result = null
-				};
+				return true;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				await _unitOfWork.RollBackAsync();
-				return new ResponseApiDTO
-				{
-					IsSuccess = false,
-					ErrorMessage = new List<string> { "Errors occur", ex.Message.ToString() },
-					StatusCode = HttpStatusCode.InternalServerError,
-					Result = null
-				};
+				throw;
 			}
 		}
+
 	}
 
 }

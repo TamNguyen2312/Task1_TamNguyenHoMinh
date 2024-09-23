@@ -10,7 +10,7 @@ namespace Task1.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StoreController : ControllerBase
+    public class StoreController : BaseAPIController
     {
         private readonly IStoreService storeService;
 
@@ -24,45 +24,117 @@ namespace Task1.WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStoreAsync([FromQuery] string? search, int page = 1)
         {
-            var response = await storeService.GetAllStoreAsync(search, page);
+            try
+            {
+                var response = await storeService.GetAllStoreAsync(search, page);
+                if(response == null)
+                {
+                    return GetError();
+                }
 
-            return StatusCode((int)response.StatusCode, response);
+                return GetSuccess(response);
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message.ToString());
+            }
         }
 
         [HttpGet/*("{id:int}", Name ="GetStoreById")*/]
         [Route("GetStoreById/{id}")]
         public async Task<IActionResult> GetStoreByIdAsync([FromRoute] string id)
         {
-            var response = await storeService.GetStoreByIdAsync(id);
-
-            return StatusCode((int)response.StatusCode, response);
+            try
+            {
+				var response = await storeService.GetStoreByIdAsync(id);
+                if(response == null)
+                {
+                    return GetNotFound($"Cannot find store with Id: {id}");
+                }
+                return GetSuccess(response);
+			}
+            catch(Exception ex)
+            {
+                return Error(ex.Message.ToString());
+            }   
         }
 
         [HttpPost]
         [Route("CreateStore")]
-        public async Task<ActionResult<StoreCreateRequestDTO>> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
+        public async Task<IActionResult> CreateStoreAsync(StoreCreateRequestDTO storeRequest)
         {
-            var response = await storeService.CreateStoreAsync(storeRequest);
+            try
+            {
+                if(!ModelState.IsValid)
+                {
+                    return ModelInvalid();
+                }
 
-            return StatusCode((int)response.StatusCode, response);
+                var response = await storeService.CreateStoreAsync(storeRequest);
+
+                if(response == null)
+                {
+                    return SaveError();
+                }
+
+                return SaveSuccess(response);
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message.ToString());
+            }
         }
 
         [HttpPut]
         [Route("UpdateStore/{id}")]
         public async Task<IActionResult> UpdateStoreAsync(string id, [FromBody]StoreUpdateRequestDTO storeRequest)
         {
-            var response = await storeService.UpdateStoreAsync(id, storeRequest);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return ModelInvalid();
+				}
 
-            return StatusCode((int)response.StatusCode, response);
-        }
+				var response = await storeService.UpdateStoreAsync(id, storeRequest);
+
+				if (response == null)
+				{
+					return SaveError();
+				}
+
+				return SaveSuccess(response);
+			}
+			catch (Exception ex)
+			{
+				return Error(ex.Message.ToString());
+			}
+		}
 
         [HttpDelete]
         [Route("DeleteStore/{id}")]
         public async Task<IActionResult> DeleteStoreAsync(string id)
         {
-            var response = await storeService.DeletetoreAsync(id);
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return ModelInvalid();
+				}
 
-            return StatusCode((int)response.StatusCode, response);
-        }
+				var response = await storeService.DeletetoreAsync(id);
+                
+                if(!response)
+                {
+                    return Error("The process has meet any erros. Please try again afer a few minutes");
+                }
+
+				return Success(response, "Deleted Succesfully");
+			}
+			catch (Exception ex)
+			{
+				return Error(ex.Message.ToString());
+			}
+		}
     }
 }

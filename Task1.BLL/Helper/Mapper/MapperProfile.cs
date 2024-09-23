@@ -19,6 +19,7 @@ namespace Task1.BLL.Helper.Mapper
             CreateMap<Store, StoreViewDTO>().ReverseMap();
             CreateMap<Store, StoreCreateRequestDTO>().ReverseMap();
             CreateMap<Store, StoreUpdateRequestDTO>().ReverseMap();
+            CreateMap<Store, StoreDetailDTO>().ReverseMap();
 
             //Titles
             CreateMap<Title, TitleViewDTO>().ReverseMap();

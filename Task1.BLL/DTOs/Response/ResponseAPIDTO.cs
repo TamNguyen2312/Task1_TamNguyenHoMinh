@@ -11,7 +11,9 @@ namespace Task1.BLL.DTOs.Response
     {
         public HttpStatusCode StatusCode { get; set; }
         public bool IsSuccess { get; set; }
-        public List<string> ErrorMessage {  get; set; }
-        public object Result { get; set; }
+        public string? Message { get; set; }
+        public List<KeyValuePair<string,string>>? Errors { get; set; }
+        public List<string>? ErrorMessage {  get; set; }
+        public object? Result { get; set; }
     }
 }
