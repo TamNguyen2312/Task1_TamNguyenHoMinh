@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Task1.BLL.DTOs.EmployeeDTOs;
@@ -13,24 +14,26 @@ namespace Task1.BLL.Helper.Mapper
 {
     public class MapperProfile : Profile
     {
-        public MapperProfile()
-        {
-            //Store
-            CreateMap<Store, StoreViewDTO>().ReverseMap();
-            CreateMap<Store, StoreCreateRequestDTO>().ReverseMap();
-            CreateMap<Store, StoreUpdateRequestDTO>().ReverseMap();
-            CreateMap<Store, StoreDetailDTO>().ReverseMap();
+		public MapperProfile()
+		{
+			var dalAssembly = Assembly.Load("Task1.DAL");
+			var bllAssembly = Assembly.Load("Task1.BLL");
 
-            //Titles
-            CreateMap<Title, TitleViewDTO>().ReverseMap();
-            CreateMap<Title, TitleCreateRequestDTO>().ReverseMap();
-            CreateMap<Title, TitleUpdateRequestDTO>().ReverseMap();
 
-            //Employees
-            CreateMap<Employee, EmpViewDTO>().ReverseMap();
-            CreateMap<Employee, EmpCreateRequestDTO>().ReverseMap();
-            CreateMap<Employee, EmpUpdateRequestDTO>().ReverseMap();
-        }
+			var entityTypes = dalAssembly.GetTypes().Where(t => t.IsClass && t.Namespace == "Task1.DAL.Entities");
 
-    }
+
+			foreach (var entityType in entityTypes)
+			{
+				var dtoTypes = bllAssembly.GetTypes()
+					.Where(t => t.IsClass && t.Namespace == $"Task1.BLL.DTOs.{entityType.Name}DTOs" && t.Name.StartsWith(entityType.Name));
+
+				foreach (var dtoType in dtoTypes)
+				{
+					CreateMap(entityType, dtoType).ReverseMap();
+				}
+			}
+		}
+
+	}
 }

@@ -6,6 +6,7 @@ using Task1.BLL.Services.Interfaces;
 using Task1.DAL;
 using Task1.DAL.Repositories;
 using Task1.Util.Queries;
+using Task1.WebAPI.Extensions;
 
 namespace Task1.WebAPI
 {
@@ -42,18 +43,16 @@ namespace Task1.WebAPI
             });
 
             //AutoMapper
-            builder.Services.AddAutoMapper(typeof(MapperProfile));
+            builder.Services.AddMapper();
 
             //set repo base
-            builder.Services.AddScoped(typeof(IRepoBase<>), typeof(RepoBase<>));
+            builder.Services.AddRepoBase();
 
             //set Unit Of Work
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddUnitOfWork();
 
             //Service
-            builder.Services.AddScoped<IStoreService, StoreService>();
-            builder.Services.AddScoped<ITitleService, TitleService>();
-            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddBLLServices();
 
             var app = builder.Build();
 
