@@ -13,7 +13,9 @@ namespace Task1.DAL.Repositories
         public Task<T> CreateAsync(T entity);
         public Task UpdateAsync(T entity);
         public Task DeleteAsync(T entity);
-        public Task<IEnumerable<T>> GetAllAsync(QueryOptions<T> options);
+        public IQueryable<T> Get(QueryOptions<T> options);
+
+		public Task<IEnumerable<T>> GetAllAsync(QueryOptions<T> options);
         public Task<T> GetSingleAsync(QueryOptions<T> options);
 
     }

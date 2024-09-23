@@ -15,5 +15,7 @@ namespace Task1.BLL.DTOs.StoreDTOs
 		public IEnumerable<StoreDetailDTO> StoreDetailDTOs { get; set; }
 		public int CurrentPage { get; set; }
 		public int TotalPages { get; set; }
+
+		public int TotalItems {  get; set; }
 	}
 }

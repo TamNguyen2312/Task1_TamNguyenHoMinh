@@ -1,19 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Task1.BLL.DTOs.Response;
 using Task1.BLL.DTOs.StoreDTOs;
 using Task1.BLL.Helper.Extension.Stores;
-using Task1.BLL.Helper.Paging;
 using Task1.BLL.Services.Interfaces;
 using Task1.DAL.Entities;
 using Task1.DAL.Repositories;
-using Task1.Util.Filters;
 using Task1.Util.Queries;
 
 namespace Task1.BLL.Services.Implements
@@ -23,7 +13,7 @@ namespace Task1.BLL.Services.Implements
 		private readonly IUnitOfWork unitOfWork;
 		private readonly IMapper mapper;
 
-		public static int PAGE_SIZE { get; set; } = 2;
+		public new static int PAGE_SIZE { get; set; } = 2;
 
 		public StoreService(IUnitOfWork unitOfWork, IMapper mapper) 
 				: base(unitOfWork, mapper)
@@ -48,7 +38,8 @@ namespace Task1.BLL.Services.Implements
 				{
 					StoreDetailDTOs = response,
 					CurrentPage = page,
-					TotalPages = response.TotalPage
+					TotalPages = response.TotalPages,
+					TotalItems = response.TotalItems
 				};
 			}
 			catch (Exception)

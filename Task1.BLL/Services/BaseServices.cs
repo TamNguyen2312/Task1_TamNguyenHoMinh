@@ -1,14 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Task1.BLL.DTOs.Response;
-using Task1.BLL.Helper.Paging;
 using Task1.DAL.Repositories;
 using Task1.Util.Filters;
 using Task1.Util.Queries;
@@ -40,7 +30,15 @@ namespace Task1.BLL.Services
 			return queryBuilder;
 		}
 
-		public async Task<PaginatedList<TDetailDto>> GetAllAsync(string? search, int page)
+		public async Task<PagingModels<TDetailDto>> GetPagedData(IQueryable<TEntity> query, int pageIndex, int pageSize)
+		{
+			var paginatedEntities = await PagingModels<TEntity>.CreateAsync(query, pageIndex, pageSize);
+			var resultDto = _mapper.Map<List<TDetailDto>>(paginatedEntities);
+
+			return new PagingModels<TDetailDto>(resultDto, paginatedEntities.TotalItems, pageIndex, pageSize);
+		}
+
+		public async Task<PagingModels<TDetailDto>> GetAllAsync(string? search, int page)
 		{
 			try
 			{
@@ -48,10 +46,11 @@ namespace Task1.BLL.Services
 				var queryOptions = queryBuilder.Build();
 
 				var repo = _unitOfWork.GetRepo<TEntity>();
-				var entities = await repo.GetAllAsync(queryOptions);
+				var entities = repo.Get(queryOptions);
 
 				var results = _mapper.Map<List<TDetailDto>>(entities);
-				var pageResults = PaginatedList<TDetailDto>.Create(results, page, PAGE_SIZE);
+
+				var pageResults = await GetPagedData(entities, page, PAGE_SIZE);
 
 				return pageResults;
 			}

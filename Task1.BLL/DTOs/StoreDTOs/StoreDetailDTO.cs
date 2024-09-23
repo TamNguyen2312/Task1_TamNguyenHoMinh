@@ -11,10 +11,10 @@ namespace Task1.BLL.DTOs.StoreDTOs
 {
 	public class StoreDetailDTO
 	{
-		public StoreDetailDTO()
-		{
-			Sales = new List<Sale>();
-		}
+		//public StoreDetailDTO()
+		//{
+		//	Sales = new List<Sale>();
+		//}
 		public string StorId { get; set; } = null!;
 
 		[Display(Name = "Name")]
@@ -38,6 +38,6 @@ namespace Task1.BLL.DTOs.StoreDTOs
 		[ZipValid(ErrorMessage = "Invalid type specified")]
 		public string? Zip { get; set; }
 
-		public ICollection<Sale> Sales { get; set; }
+		//public ICollection<Sale> Sales { get; set; }
 	}
 }

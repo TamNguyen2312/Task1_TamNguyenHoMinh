@@ -38,7 +38,7 @@ namespace Task1.DAL.Repositories
             return Task.CompletedTask;
         }
 
-		private IQueryable<T> Get(QueryOptions<T> options)
+		public IQueryable<T> Get(QueryOptions<T> options)
 		{
 			IQueryable<T> query = _dbSet;
 
